@@ -1,13 +1,13 @@
 package handlers
 
 import (
+	"ballot-box/internal/modules/users/models"
+	"ballot-box/internal/utils/auth"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
 	"log"
 	"net/http"
-	"voting-platform/internal/modules/users/models"
-	"voting-platform/internal/utils/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -55,7 +55,7 @@ func Login(db *sql.DB) gin.HandlerFunc {
 		hashedPassword := hashPassword(loginRequest.Password)
 
 		var user struct {
-            ID       int    `json:"id"`
+            ID       string    `json:"id"`
             Username string `json:"username"`
             Email    string `json:"email"`
             Role     string `json:"role"`
@@ -72,7 +72,8 @@ func Login(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		token, err := auth.GenerateJWT(user.Username)
+		token, err := auth.GenerateJWT(user.ID, user.Username, user.Role)
+	
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 			return
