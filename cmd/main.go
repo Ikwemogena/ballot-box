@@ -1,10 +1,11 @@
 package main
 
 import (
+	"ballot-box/database"
+	electionRoutes "ballot-box/internal/modules/elections/routes"
+	voterRoutes "ballot-box/internal/modules/users/routes"
+	voteRoutes "ballot-box/internal/modules/votes/routes"
 	"log"
-	"voting-platform/database"
-	voterRoutes "voting-platform/internal/modules/users/routes"
-	voteRoutes "voting-platform/internal/modules/votes/routes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,6 +21,7 @@ func main() {
 
 	voterRoutes.Setup(r, db)
 	voteRoutes.Setup(r, db)
+	electionRoutes.Setup(r, db)
 
 	r.Run(":8080")
 }
