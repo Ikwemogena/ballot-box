@@ -1,8 +1,8 @@
 package routes
 
 import (
+	"ballot-box/internal/modules/users/handlers"
 	"database/sql"
-	"voting-platform/internal/modules/users/handlers"
 
 	"github.com/gin-gonic/gin"
 )
