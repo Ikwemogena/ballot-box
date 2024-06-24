@@ -2,6 +2,7 @@ package main
 
 import (
 	"ballot-box/database"
+	contestantRoutes "ballot-box/internal/modules/contestants/routes"
 	electionRoutes "ballot-box/internal/modules/elections/routes"
 	voterRoutes "ballot-box/internal/modules/users/routes"
 	voteRoutes "ballot-box/internal/modules/votes/routes"
@@ -19,6 +20,7 @@ func main() {
 
 	r := gin.Default()
 
+	contestantRoutes.Setup(r, db)
 	voterRoutes.Setup(r, db)
 	voteRoutes.Setup(r, db)
 	electionRoutes.Setup(r, db)
