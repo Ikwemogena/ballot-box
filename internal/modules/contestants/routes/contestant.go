@@ -10,11 +10,12 @@ import (
 
 func Setup(router *gin.Engine, db *sql.DB) {
 
-	auth := router.Group("/contestant")
+	auth := router.Group("/contestants")
 
 	auth.Use(middleware.AuthMiddleware())
 	auth.Use(middleware.AdminOnlyMiddleware())
 	{
 		auth.POST("/add", handlers.AddContestant(db))
+		auth.GET("/all", handlers.GetAllContestants(db))
 	}
 }
