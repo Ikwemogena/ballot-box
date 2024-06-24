@@ -8,7 +8,9 @@ import (
 )
 
 func Setup(router *gin.Engine, db *sql.DB) {
-	router.POST("/voter/register", handlers.Register(db))
-	router.POST("/voter/login", handlers.Login(db))
+	router.POST("/admin/register", handlers.Login(db))
+	router.POST("/voter/register", handlers.RegisterAdmin(db))	
 
+	router.POST("/admin/login", handlers.LoginAdmin(db))
+	router.POST("/voter/login", handlers.Login(db))
 }
