@@ -16,5 +16,8 @@ func Setup(router *gin.Engine, db *sql.DB) {
 	auth.Use(middleware.AdminOnlyMiddleware())
 	{
 		auth.POST("/create", handlers.CreateElection(db))
+		auth.GET("/:election_id", handlers.GetElection(db))
+		auth.GET("/:election_id/contestants", handlers.GetElectionContestants(db))
+		
 	}
 }
