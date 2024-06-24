@@ -90,7 +90,7 @@ func GetElectionContestants(db *sql.DB) gin.HandlerFunc {
 		electionID := c.Param("election_id")
 
 		query := `
-			SELECT id, election_id, name
+			SELECT id, name, election_id
 			FROM contestants
 			WHERE election_id = $1
 		`
