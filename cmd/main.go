@@ -7,6 +7,7 @@ import (
 	voterRoutes "ballot-box/internal/modules/users/routes"
 	voteRoutes "ballot-box/internal/modules/votes/routes"
 	"log"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,16 @@ func main() {
 	defer db.Close()
 
 	r := gin.Default()
-	r.Use(cors.Default())
+
+	config := cors.DefaultConfig()
+    config.AllowAllOrigins = true
+    config.AllowMethods = []string{"POST", "GET", "PUT", "OPTIONS"}
+    config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"}
+    config.ExposeHeaders = []string{"Content-Length"}
+    config.AllowCredentials = true
+    config.MaxAge = 12 * time.Hour
+
+    r.Use(cors.New(config))
 
 	contestantRoutes.Setup(r, db)
 	voterRoutes.Setup(r, db)
