@@ -20,12 +20,12 @@ func main() {
 	defer db.Close()
 
 	r := gin.Default()
+	r.Use(cors.Default())
 
 	contestantRoutes.Setup(r, db)
 	voterRoutes.Setup(r, db)
 	voteRoutes.Setup(r, db)
 	electionRoutes.Setup(r, db)
 
-	r.Use(cors.Default())
-	r.Run()
+	r.Run(":8080")
 }
