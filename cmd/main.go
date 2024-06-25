@@ -8,6 +8,7 @@ import (
 	voteRoutes "ballot-box/internal/modules/votes/routes"
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,5 +26,6 @@ func main() {
 	voteRoutes.Setup(r, db)
 	electionRoutes.Setup(r, db)
 
-	r.Run(":8080")
+	r.Use(cors.Default())
+	r.Run()
 }
