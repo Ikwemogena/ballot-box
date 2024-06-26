@@ -9,4 +9,5 @@ type Election struct {
 	StartTime   time.Time `json:"start_time"`
 	EndTime     time.Time `json:"end_time"`
 	CreatedBy   string       `json:"created_by"`
+	Positions   []Position `json:"positions"`
 }

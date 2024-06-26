@@ -55,11 +55,41 @@ func CreateElection(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
-func GetElection(db *sql.DB) gin.HandlerFunc {
+
+func AddPositionToElection(db *sql.DB) gin.HandlerFunc {
 	return func (c *gin.Context) {
 		electionID := c.Param("election_id")
 
+		var position models.Position
+
+		if err := c.ShouldBindJSON(&position); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
 		query := `
+			INSERT INTO positions (name, election_id)
+			VALUES ($1, $2)
+			RETURNING id
+		`
+
+		err := db.QueryRow(query, position.Name, electionID).Scan(&position.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not add position to election"})
+			return
+		}
+
+		c.JSON(http.StatusOK, position)
+	}
+
+}
+
+func GetElectionDetails(db *sql.DB) gin.HandlerFunc {
+	return func (c *gin.Context) {
+		electionID := c.Param("election_id")
+
+
+		electionQuery := `
 			SELECT id, title, description, start_time, end_time, created_by
 			FROM elections
 			WHERE id = $1
@@ -67,7 +97,7 @@ func GetElection(db *sql.DB) gin.HandlerFunc {
 
 		var election models.Election
 
-		err := db.QueryRow(query, electionID).Scan(
+		err := db.QueryRow(electionQuery, electionID).Scan(
 			&election.ID,
 			&election.Title,
 			&election.Description,
@@ -81,6 +111,60 @@ func GetElection(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
+		positonsQuery := `
+			SELECT id, name, election_id, created_by, created_at 
+			FROM positions 
+			WHERE election_id = $1
+		`
+
+		rows, err := db.Query(positonsQuery, electionID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get positions"})
+			return
+		}
+
+		defer rows.Close()
+		
+		var positions []models.Position
+
+		for rows.Next() {
+			var position models.Position
+			err := rows.Scan(&position.ID, &position.Name, &position.ElectionID, &position.CreatedBy, &position.CreatedAt)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not scan positions"})
+				return
+			}
+
+			contestantsQuery := `
+				SELECT id, name, position_id, created_at 
+				FROM contestants 
+				WHERE position_id = $1
+			`
+			contestantRows, err := db.Query(contestantsQuery, position.ID)
+
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error querying contestants"})
+				return
+			}
+
+			defer contestantRows.Close()
+
+			var contestants []models.Contestant
+
+			for contestantRows.Next() {
+				var contestant models.Contestant
+				err := contestantRows.Scan(&contestant.ID, &contestant.Name, &contestant.PositionID, &contestant.CreatedAt)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Error scanning contestant"})
+					return
+				}
+				contestants = append(contestants, contestant)
+			}
+			position.Contestants = contestants
+			positions = append(positions, position)
+		}
+
+		election.Positions = positions
 		c.JSON(http.StatusOK, election)
 	}
 }
