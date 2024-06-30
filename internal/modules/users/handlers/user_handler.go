@@ -21,9 +21,15 @@ func RegisterAdmin(db *sql.DB) gin.HandlerFunc  {
             return
         }
 
+		if UserExists(db, user.Username, user.Email) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
+			return
+		}
+
 		hashedPassword := hashPassword(user.Password)
 		user.Password = hashedPassword
 
+		user.Role = "admin"
 		query := "INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id"
 		user.Role = "admin"
         err := db.QueryRow(query,
@@ -31,7 +37,6 @@ func RegisterAdmin(db *sql.DB) gin.HandlerFunc  {
 
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating the user."})
-			log.Println("Error creating the user", err)
             return
         }
 
@@ -93,6 +98,11 @@ func Register(db *sql.DB) gin.HandlerFunc  {
             c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
             return
         }
+
+		if UserExists(db, user.Username, user.Email) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
+			return
+		}
 
 		hashedPassword := hashPassword(user.Password)
 		user.Password = hashedPassword
@@ -187,4 +197,17 @@ func GetAllUsers(db *sql.DB) gin.HandlerFunc {
 			users = append(users, user)
 		}
 	}
+}
+
+func UserExists(db *sql.DB, username, email string) bool {
+	var user models.User
+	query := "SELECT id, username, email, password, role FROM users WHERE username=$1 OR email=$2"
+	err := db.QueryRow(query, username, email).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Role)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+		return false
+	}
+	return true
 }
