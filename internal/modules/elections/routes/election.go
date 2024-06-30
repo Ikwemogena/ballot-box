@@ -17,6 +17,7 @@ func Setup(router *gin.Engine, db *sql.DB) {
 	{
 		auth.POST("/create", handlers.CreateElection(db))
 		auth.GET("/:election_id", handlers.GetElectionDetails(db))
+		auth.POST("/:election_id/add-position", handlers.AddPositionToElection(db))
 		auth.GET("/:election_id/contestants", handlers.GetElectionContestants(db))
 		
 	}
