@@ -88,6 +88,10 @@ func GetElectionDetails(db *sql.DB) gin.HandlerFunc {
 	return func (c *gin.Context) {
 		electionID := c.Param("election_id")
 
+		if !ElectionExists(db, models.Election{ID: electionID}) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Election not found"})
+			return
+		}
 
 		electionQuery := `
 			SELECT id, title, description, start_time, end_time, created_by
@@ -201,4 +205,17 @@ func GetElectionContestants(db *sql.DB) gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, contestants)
 	}
+}
+
+
+// check if election exists 
+func ElectionExists(db *sql.DB, election models.Election) bool {
+	query := `
+		SELECT id 
+		FROM elections
+		WHERE id = $1
+	`
+
+	err := db.QueryRow(query, election.ID).Scan(&election.ID)
+	return err == nil
 }
